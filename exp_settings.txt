@@ -1,0 +1,48 @@
+Common settings:
+	Target: evolve efficient locomotion on land and in water
+
+	Multi-evaluation: 2
+	Standard.expdef changes: raise water to 5 after one eval (on land) in multi evaluation, decrease back to -1 after second eval (after in water) + see Fitness
+
+	Encoding: f1
+	
+	Starting population:
+		- 50 base sticks (X) <- make more starting points so evolution has a chance to take multiple paths from beginning
+		
+	Neurons to add:
+		- smell, off
+		- differentiate, on
+		- water detector, on
+		- random noise, on
+		- sinus generator, on
+		- delay, on
+		- threshold, on
+	
+	Stop:
+		- 25000 creature evaluations or
+		- stagnation (5000 creature evaluations with no best improvement)
+
+	Other: 
+		- don't simulate genotypes with warnings, on
+		- log every 10 evaluations (creature evaluations <- it is implied by new standard.expdef, multieval restricted from it)
+		- boost phase after stagnation, off <- doubles multieval (stated in tooltip) -> breaks our fitness
+		- performance sampling period & while waiting: 250
+		- kill if no stabilization after: 50000
+
+
+Param1 "average fitness":
+	Fitness: average of distance of 2 evaluations: on land and in water, for water - distance is decreased by water level and increased by vertical pos up to water level so drowning doesn't count (done in Standard.expdef)
+
+Param2 "geometric mean fitness":
+	Fitness: geometric mean of distance of 2 evaluations: on land and in water (done in Standard.expdef), for water - distance is decreased by water level and increased by vertical pos up to water level so drowning doesn't count
+		- geometric mean turned on by "dirty trick" - setting size property on World to 20.001 from 20.0 -> handled in expdef; size>20
+
+Param3 "geometric mean fitness with high variance/exploration - lower selection pressure and no crossover, higher gene pool":
+	Fitness: geometric mean of distance of 2 evaluations: on land and in water (done in Standard.expdef), for water - distance is decreased by water level and increased by vertical pos up to water level so drowning doesn't count
+		- geometric mean turned on by "dirty trick" - setting size property on World to 20.002 from 20.0 -> handled in expdef; size>20
+	Selection: Tournament of 2 genotypes
+	Crossover: 0
+	Mutated: 72
+	Unchanged: 28
+	Gene pool: 200
+
