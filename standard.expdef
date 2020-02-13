@@ -328,7 +328,7 @@ function multipleEvalProcedure(g, cr)
 			//g.data->multieval_std = g.data->multieval.stdev; //compute std.dev. for a vector of fitness values
 			if (g_eval_again != null)
 			{
-				Simulator.print("Another multiple evaluation of '" + g.name + "': previous average fitness was " + g_eval_again + ", now changed by " + (g.fit2 - g_eval_again));
+				//Simulator.print("Another multiple evaluation of '" + g.name + "': previous average fitness was " + g_eval_again + ", now changed by " + (g.fit2 - g_eval_again));
 				g_eval_again = null;
 			}
 			return 1;

@@ -1,4 +1,4 @@
-# created Thu Feb 13 08:47:58 2020
+# created Thu Feb 13 10:04:42 2020
 # by Framsticks 5.0rc14
 sim_params:
 stop_on:2
@@ -9,8 +9,8 @@ usercode:
 autosaveperiod:0
 overwrite:0
 filecomm:1
-createrr:1
-groupchk:1
+createrr:0
+groupchk:0
 creatwarnfail:1
 vm_step_limit:0
 vm_step_warning:0
