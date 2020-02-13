@@ -3,8 +3,10 @@ C:\Users\Piotr\Desktop\Framsticks50rc14>FOR /L %N IN (1 1 10) DO (echo start   &
 
 C:\Users\Piotr\Desktop\Framsticks50rc14>(echo start   & wmic os get localdatetime   & echo.   & frams "im average.sim" "World.wrldsiz = 20.0 + (1 - 1) * 0.001;" "if(1 == 3) { ExpProperties.p_xov = 0; ExpProperties.p_mut = 72; ExpProperties.selrule = 2; ExpProperties.p_nop = 28; ExpProperties.capacity = 200; }" "Math.randomize();" "Simulator.init();" "var tempVarI = 1; while (tempVarI<50) { GenePools[0].add(ExpProperties.initialgen); tempVarI += 1; }"  "Simulator.start();""while (ExpState.totaltestedcr<25000 && Simulator.running) Simulator.step();" "sa finished_1_1.expt" "-q"   & echo finish   & wmic os get localdatetime   & echo.  ) 
 start 
-L o c a l D a t e T i m e                              
- 2 0 2 0 0 2 1 3 1 1 2 5 2 6 . 7 3 1 0 0 0 + 0 6 0      
+L o c a l D a t e T i m e                             
+ 
+ 2 0 2 0 0 2 1 3 1 1 2 5 2 6 . 7 3 1 0 0 0 + 0 6 0     
+ 
   
 Framsticks command-line interface and server, version 5.0rc14
 Supported features: Multi-threading[+], ODE[0.14_double], Python[-]
@@ -77,14 +79,18 @@ Script.Message: [LOG] 24990 90 9.08528321256184e-10 4.440086001305415 6.96846666
 Script.Message: [LOG] 25000 92 9.08528321256184e-10 4.440264697075393 5.81807514347214
 Script.Message: Experiment saved (92 genotypes, 0 creatures)
 finish 
-L o c a l D a t e T i m e                              
- 2 0 2 0 0 2 1 3 1 1 3 2 4 9 . 6 2 6 0 0 0 + 0 6 0      
+L o c a l D a t e T i m e                             
+ 
+ 2 0 2 0 0 2 1 3 1 1 3 2 4 9 . 6 2 6 0 0 0 + 0 6 0     
+ 
   
 
 C:\Users\Piotr\Desktop\Framsticks50rc14>(echo start   & wmic os get localdatetime   & echo.   & frams "im average.sim" "World.wrldsiz = 20.0 + (1 - 1) * 0.001;" "if(1 == 3) { ExpProperties.p_xov = 0; ExpProperties.p_mut = 72; ExpProperties.selrule = 2; ExpProperties.p_nop = 28; ExpProperties.capacity = 200; }" "Math.randomize();" "Simulator.init();" "var tempVarI = 1; while (tempVarI<50) { GenePools[0].add(ExpProperties.initialgen); tempVarI += 1; }"  "Simulator.start();""while (ExpState.totaltestedcr<25000 && Simulator.running) Simulator.step();" "sa finished_1_2.expt" "-q"   & echo finish   & wmic os get localdatetime   & echo.  ) 
 start 
-L o c a l D a t e T i m e                              
- 2 0 2 0 0 2 1 3 1 1 3 2 4 9 . 6 7 9 0 0 0 + 0 6 0      
+L o c a l D a t e T i m e                             
+ 
+ 2 0 2 0 0 2 1 3 1 1 3 2 4 9 . 6 7 9 0 0 0 + 0 6 0     
+ 
   
 Framsticks command-line interface and server, version 5.0rc14
 Supported features: Multi-threading[+], ODE[0.14_double], Python[-]
@@ -138,7 +144,7 @@ Script.Message: [LOG] 250 88 1.394642894747373e-9 6.160626885995746e-9 8.1208751
 Script.Message: [LOG] 260 88 1.394642894747373e-9 6.198380186005196e-9 8.120875133812434e-9
 Script.Message: [LOG] 270 93 1.394642894747373e-9 4.655096895624449e-7 4.6393431741119046e-5
 Script.Message: [LOG] 280 91 1.394642894747373e-9 5.311042684284867e-7 4.6393431741119046e-5
-Script.Message: [LOG] 290 85 1.3946435245789268e-9 2.8526378346429364e-6 0.00023337845533036116
+Script.Message: [LOG] 290 85 1.3946435245789268e-9 6378346429364e-6 0.00023337845533036116
 Script.Message: [LOG] 300 84 1.3946428966417592e-9 4.871882249766305e-7 4.6393431741119046e-5
 Script.Message: [LOG] 310 87 1.3946428966417592e-9 4.872360765661314e-7 4.6393431741119046e-5
 Script.Message: [LOG] 320 85 1.3946428966417592e-9 5.196036516433216e-7 4.6393431741119046e-5
@@ -162,14 +168,18 @@ Script.Message: stagnation detected .....
 ... konczy sie wczesniej przy stagnation, w sensie odrazu ...
 Script.Message: Experiment saved (98 genotypes, 0 creatures)
 finish 
-L o c a l D a t e T i m e                              
- 2 0 2 0 0 2 1 3 1 1 4 0 4 5 . 7 9 8 0 0 0 + 0 6 0      
+L o c a l D a t e T i m e                             
+ 
+ 2 0 2 0 0 2 1 3 1 1 4 0 4 5 . 7 9 8 0 0 0 + 0 6 0     
+ 
   
 
 C:\Users\Piotr\Desktop\Framsticks50rc14>(echo start   & wmic os get localdatetime   & echo.   & frams "im average.sim" "World.wrldsiz = 20.0 + (1 - 1) * 0.001;" "if(1 == 3) { ExpProperties.p_xov = 0; ExpProperties.p_mut = 72; ExpProperties.selrule = 2; ExpProperties.p_nop = 28; ExpProperties.capacity = 200; }" "Math.randomize();" "Simulator.init();" "var tempVarI = 1; while (tempVarI<50) { GenePools[0].add(ExpProperties.initialgen); tempVarI += 1; }"  "Simulator.start();""while (ExpState.totaltestedcr<25000 && Simulator.running) Simulator.step();" "sa finished_1_3.expt" "-q"   & echo finish   & wmic os get localdatetime   & echo.  ) 
 start 
-L o c a l D a t e T i m e                              
- 2 0 2 0 0 2 1 3 1 1 4 0 4 5 . 8 4 5 0 0 0 + 0 6 0      
+L o c a l D a t e T i m e                             
+ 
+ 2 0 2 0 0 2 1 3 1 1 4 0 4 5 . 8 4 5 0 0 0 + 0 6 0     
+ 
   
 Framsticks command-line interface and server, version 5.0rc14
 Supported features: Multi-threading[+], ODE[0.14_double], Python[-]
