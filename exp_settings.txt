@@ -24,6 +24,8 @@ Common settings:
 
 	Other: 
 		- don't simulate genotypes with warnings, on
+		- warn on adding invalid genotypes, off
+		- object creation errors, don't print (mute)
 		- log every 10 evaluations (creature evaluations <- it is implied by new standard.expdef, multieval restricted from it)
 		- boost phase after stagnation, off <- doubles multieval (stated in tooltip) -> breaks our fitness
 		- performance sampling period & while waiting: 250
