@@ -22,7 +22,7 @@ global g_evaluated_genotype; //genotype uid for multiple evaluation mode
 global g_bestsofar; //last best
 global g_bestsofarnr; //last best time
 global g_uniquename; //used to save experiment files
-
+global multieval_measures = ["distance", "velocity", "vertvel", "vertpos"]; //used for accessing members for multieval perfmormance storing in loop
 function onExpDefLoad()
 {
 	// define genotype and creature groups
@@ -90,7 +90,7 @@ function onBorn(cr)
 	var retry = TRIALS;
 
 	//if you want to rotate a creature differently each time it is evaluated during "multiple evaluation"
-	
+	/*
 	if (ExpProperties.evalcount == 6)
 	{
 	  //different rotation in each of the multiple evaluations: none, left, right, forth, back, upside-down
@@ -98,7 +98,7 @@ function onBorn(cr)
 	  var rotationsy = [0, Math.pi2, -Math.pi2, 0,        0,         0];
 	  var extrarotate = ExpState.totaltests % 6;
 	  cr.rotate(rotationsx[extrarotate],rotationsy[extrarotate],0);
-	}
+	}*/
 
 	var placed_ok = 0;
 	while (retry--)
@@ -199,14 +199,14 @@ function addGenotypePerformanceFromCreature(g, cr)
 // Want to take instances into account? Do it here: g.data->myfield = (float(g.data->myfield) * g.instances + cr.data->myfield) / (g.instances + 1);
     
 	if(ExpProperties.evalcount > 0){
-		dumpMultievalPerformanceToCreature(g,cr);
-		g.data->multieval = null;
+		multievalStoreGenotypePerformanceInCreature(g,cr);
+		g.data.remove("multieval");
 	}
 	g.addPerformanceFromCreature(cr);
 	
 }
 
-function actionOnNextEval(g, cr)
+function multievalActionOnEveryEvaluation(g, cr)
 {
 	// do whatever you want between evals in multieval mode, example:
 	
@@ -240,32 +240,26 @@ function actionOnNextEval(g, cr)
 }
 
 
-function dumpCreaturePerformanceToMultieval(g,cr)
+function multievalStoreCreaturePerformanceInGenotype(g,cr)
 {
-	// you can add more performance values to average over multiple eval
-	g.data->multieval->velocity.add(cr.velocity);
-	g.data->multieval->vertpos.add(cr.vertpos);
-	g.data->multieval->vertvel.add(cr.vertvel);
-	g.data->multieval->distance.add(cr.distance);
-	// this one is mandatory
-	g.data->multieval->creatures = g.data->multieval->creatures + 1;
+	for (var measure in multieval_measures)
+		g.data->multieval.[measure].add(cr.[measure]);
+
+	g.data->multieval->creatures++;
 }
 
 
-function dumpMultievalPerformanceToCreature(g,cr)
+function multievalStoreGenotypePerformanceInCreature(g,cr)
 {
-	// you can add more performance values to average over multiple eval
-	cr.velocity = g.data->multieval->velocity.avg;
-	cr.vertpos = g.data->multieval->vertpos.avg;
-	cr.vertvel = g.data->multieval->vertvel.avg;
-	cr.distance = g.data->multieval->distance.avg;
+	for (var measure in multieval_measures)
+		cr.[measure] = g.data->multieval.[measure].avg
 }
 
 
 
 function structuredOutput(g, cr)
 {
-  if (ExpProperties.evalcount > 0) return 1; //not tested with multiple evaluation mode, hence "else"
+  if (ExpProperties.evalcount > 0) return 1; //not tested with multiple evaluation mode, hence "return"
 	if (ExpProperties.structured_output == 1)  
 	{
 		var dict = {"ID": "n" + g.num, "Time": Simulator.stepNumber, "Fitness": g.fit2};
@@ -280,57 +274,54 @@ function structuredOutput(g, cr)
 	}
 }
 
-function initializeMultieval(g)
+function multievalInitialize(g)
 {
-	g.data->multieval = Dictionary.new();
-	// you can add more performance values to average over multiple eval
-	g.data->multieval->velocity = [];
-	g.data->multieval->distance = [];
-	g.data->multieval->vertpos = [];
-	g.data->multieval->vertvel = [];
-	// this is mandatory
+	g.data->multieval = {};
+	
+	for (var measure in multieval_measures)
+		g.data->multieval.[measure] = []
+	
 	g.data->multieval->creatures = 0;
 }
 
-global g_eval_again; //just to detect if some genotype is evaluated once again (and how much its average fitness varies from evaluation to evaluation even when they are repeated). Maybe this could be implemented better now that we have "data" dictionaries in Genotypes.
+//global g_eval_again; //just to detect if some genotype is evaluated once again (and how much its average fitness varies from evaluation to evaluation even when they are repeated). Maybe this could be implemented better now that we have "data" dictionaries in Genotypes.
 
 // handles multiple evaluation and returns 1 if it is finished and 0 if still evaluating
-function multipleEvalProcedure(g, cr)
+function multievalProcedure(g, cr)
 {
 	if (ExpProperties.evalcount <= 0) return 1;
   
-	//multiple evaluation - tricks to compute stddev of fitness and to detect if the same genotype has been multiply evaluated in the past:
+	//multiple evaluation - tricks  to detect if the same genotype has been multiply evaluated in the past:
 		if (g_evaluated_genotype != null && GenePools[0].findUID(g_evaluated_genotype) < 0)
 			g_evaluated_genotype = null; //evaluated genotype was lost
 		if (g_evaluated_genotype == null)
 			g_evaluated_genotype = g.uid;
 		
-	if (!g.data.hasKey("multieval")) //first evaluation or other, rare cases (e.g. mutation produced an already existing genotype)
-		{
-			initializeMultieval(g);
-		}
-		else
-		{
-			if(g.data->multieval == null)
-				initializeMultieval(g);
-			g_eval_again = g.fit2; //was already evaluated! let's see how much its average fitness varies  //?
-		}
-  
-	dumpCreaturePerformanceToMultieval(g,cr);
+	if (!g.data.hasKey("multieval")) //first evaluation
+	{
+		initializeMultieval(g);
+	}
 	
-	// commands to run before next evaluation
-	actionOnNextEval(g,cr);
+		//g_eval_again = g.fit2; //was already evaluated! let's see how much its average fitness varies  // std_calculation
+  
+	multievalStoreCreaturePerformanceInGenotype(g,cr);
+	
+	// custom commands to run before next evaluation
+	multievalActionOnEveryEvaluation(g,cr);
 	
   	if (g.data->multieval->creatures >= ExpProperties.evalcount)
 		{
       
 			g_evaluated_genotype = null; //no more evaluations needed for this one
-			//g.data->multieval_std = g.data->multieval.stdev; //compute std.dev. for a vector of fitness values
+			
+			/* // std_calculation
+			//g.data->multieval_std = g.data->multieval.stdev; //compute std.dev. for a vector of fitness values 
 			if (g_eval_again != null)
 			{
 				//Simulator.print("Another multiple evaluation of '" + g.name + "': previous average fitness was " + g_eval_again + ", now changed by " + (g.fit2 - g_eval_again));
 				g_eval_again = null;
 			}
+			*/
 			return 1;
 		}
 	return 0;
@@ -433,7 +424,7 @@ function onDied(cr)
 	{
 		var g = getCreatureGenotype(cr);
 		structuredOutput(g, cr);
-		during_multiple_eval = multipleEvalProcedure(g, cr); // checks if there is multieval, runs its procedure if so, returns if multi eval finished
+		during_multiple_eval = multievalProcedure(g, cr); // checks if there is multieval, runs its procedure if so, returns if multi eval finished
     
 		if(during_multiple_eval)
 		{
