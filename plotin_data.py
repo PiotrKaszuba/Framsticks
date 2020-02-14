@@ -69,12 +69,45 @@ def fix_dtypes(df):
     df['time'] = pd.to_timedelta(df['time'])
     return df
 
+def plot_avg_fitness(df):
+    sns.set(style='darkgrid')
+    plot = sns.violinplot(x=df['param'], y=df['avg'])
+    plot.set_title("Average scores for all parameterizations")
+    plot.set_ylabel("Average score")
+    plot.set_xlabel("Parameterizations")
+    plt.show()
+
+def plot_best_fitness(df):
+    sns.set(style='darkgrid')
+    plot = sns.violinplot(x=df['param'], y=df['best'])
+    plot.set_title('Best scores for all parametrizations')
+    plot.set_ylabel("Best score")
+    plot.set_xlabel("Parameterizations")
+    plt.show()
+
+def plot_computation_time_for_parameterizations(df):
+    sns.set(style='darkgrid')
+    plot = sns.violinplot(x=df['param'], y=df['time'] / np.timedelta64(1, 's'))
+    plot.set_title('Duration of experiments for all parametrizations')
+    plot.set_ylabel("Duration of experiment")
+    plot.set_xlabel("Parameterizations")
+    plt.show()
+
 def plot_multiline_fitness(df):
     sns.set(style='darkgrid')
-    sns.violinplot(x=df['param'], y=df['avg'])
+    tmp_df = df[df['param']==1]
+    for i, c in zip(df.param.unique(), ['Reds_r', 'Blues_r', 'Greens_r']):
+        tmp_df = df[df['param']==i]
+
+        palette = dict(zip(tmp_df.run.unique(),
+                           sns.color_palette(c, 15)[:10]))
+        plot = sns.relplot(x='num_cr', y='best',
+                   hue='run', palette=palette, kind='line', data=tmp_df)
+        plot.set_axis_labels("Number of creatures", "Best score")
+        plt.title("Number of creatures and their score for parameterization {}".format(i))
+
     plt.show()
 
 df = select_lines('outputFile.txt')
 df = fix_dtypes(df)
-print(df.dtypes)
 plot_multiline_fitness(df)
