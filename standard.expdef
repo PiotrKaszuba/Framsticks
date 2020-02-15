@@ -223,7 +223,15 @@ function calculateFitnessStd(g,cr, previousAvg)
 	g.data->fitness_std = g.data->fitnesses.stdev;
 	
 	if(g.data->fitnesses.size > 1) // if its not the first entry; print how fitness varies
-		Simulator.print("Another evaluation of '" + g.name + "': previous average fitness was " + previousAvg + ", now changed by " + (g.fit-previousAvg)+". This genotype fitness standard deviation is: " + g.data->fitness_std);
+		Simulator.print("Another evaluation of '" + g.name + "': previous average fitness was " + previousAvg + ", now changed by " + (lastFit-previousAvg)+". This genotype fitness standard deviation is: " + g.data->fitness_std);
+	
+	// one can take into account stdev by setting fit2 to fit-stdev, example below
+	// note that this assignment conflicts with fitness scaling and speciation mechanisms
+	
+	//if(g.data.hasKey('fitness_std'))
+		//if(g.data->fitness_std != null)
+			//g.fit2 = g.fit - g.data->fitness_std;
+	
 	
 }
 
@@ -246,6 +254,7 @@ function addGenotypePerformanceFromCreature(g, cr)
 	
 	// fired always, not only in multieval - we dont get fitnesses in multieval mode -> only after update here; so no need to couple those 2// control by calculateFitnessStd_ global
 	calculateFitnessStd(g, cr, previous_avg_fitness);
+	
 	
 }
 
