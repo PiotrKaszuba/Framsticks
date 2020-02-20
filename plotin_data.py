@@ -111,3 +111,6 @@ def plot_multiline_fitness(df):
 df = select_lines('outputFile.txt')
 df = fix_dtypes(df)
 plot_multiline_fitness(df)
+plot_avg_fitness(df)
+plot_best_fitness(df)
+plot_computation_time_for_parameterizations(df)
