@@ -22,7 +22,7 @@ global g_evaluated_genotype; //genotype uid for multiple evaluation mode
 global g_bestsofar; //last best
 global g_bestsofarnr; //last best time
 global g_uniquename; //used to save experiment files
-global multieval_measures = ["distance", "velocity", "vertvel", "vertpos"]; //used for accessing members for multieval perfmormance storing in loop
+global multieval_measures = ["distance", "velocity", "vertvel", "vertpos", "lifespan"]; //used for accessing members for multieval perfmormance storing in loop
 function onExpDefLoad()
 {
 	// define genotype and creature groups
@@ -192,17 +192,69 @@ function saveGenotype(genotype, filename, description, append)
 	f.close();
 }
 
+global calculateFitnessStd_averagesLimit = 100; // a parameter to limit saved means so we dont fill memory forever for a genotype
+global calculateFitnessStd_ = 0; // whether one wants to calculate stdev
+
+function calculateFitnessStd(g,cr, previousAvg)
+{
+	
+	if(!calculateFitnessStd_) return;
+	
+	// note: this function works outside of multieval
+	
+	// if first time simulated genotype then add Vector of fitnesses
+	if(!g.data.hasKey('fitnesses'))
+		g.data->fitnesses = [];
+	
+	var current_fit = g.fit;
+	if (current_fit == null)
+		current_fit = 0;
+	
+	// new_avg = ( prevAvg * (instances - 1) + lastFit )/instances
+	// lastFit = new_avg * instances - prevAvg * (instances - 1)
+	// its ok with an assumption that new_avg varies more when limiting gene pool (reducing instances) -> so that it changes more than it would without deleteting an instance
+	var lastFit = current_fit * g.instances - previousAvg * (instances-1);
+	
+	g.data->fitnesses.add(lastFit);
+	if (g.data->fitnesses > calculateFitnessStd_averagesLimit)
+		g.data->fitnesses.remove(0); // if higher than limit; delete the oldest entry
+	
+	//update std
+	g.data->fitness_std = g.data->fitnesses.stdev;
+	
+	if(g.data->fitnesses.size > 1) // if its not the first entry; print how fitness varies
+		Simulator.print("Another evaluation of '" + g.name + "': previous average fitness was " + previousAvg + ", now changed by " + (lastFit-previousAvg)+". This genotype fitness standard deviation is: " + g.data->fitness_std);
+	
+	// one can take into account stdev by setting fit2 to fit-stdev, example below
+	// note that this assignment conflicts with fitness scaling and speciation mechanisms
+	
+	//if(g.data.hasKey('fitness_std'))
+		//if(g.data->fitness_std != null)
+			//g.fit2 = g.fit - g.data->fitness_std;
+	
+	
+}
+
 
 function addGenotypePerformanceFromCreature(g, cr)
 {
 // Want to copy customized values from Creature data fields to Genotype data fields? Do it here (or in a specialized Simulator.userscript function - see foodfinding-user.inc): g.data->myfield = cr.data->myfield;
 // Want to take instances into account? Do it here: g.data->myfield = (float(g.data->myfield) * g.instances + cr.data->myfield) / (g.instances + 1);
     
+	var previous_avg_fitness = g.fit; // for calculating new fitness when having more than 1 instance. see calculateFitnessStd
+	if (previous_avg_fitness == null)
+		previous_avg_fitness = 0;
+	
 	if(ExpProperties.evalcount > 0){
 		multievalStoreGenotypePerformanceInCreature(g,cr);
 		g.data.remove("multieval");
 	}
+	
 	g.addPerformanceFromCreature(cr);
+	
+	// fired always, not only in multieval - we dont get fitnesses in multieval mode -> only after update here; so no need to couple those 2// control by calculateFitnessStd_ global
+	calculateFitnessStd(g, cr, previous_avg_fitness);
+	
 	
 }
 
@@ -259,7 +311,7 @@ function multievalStoreGenotypePerformanceInCreature(g,cr)
 
 function structuredOutput(g, cr)
 {
-  if (ExpProperties.evalcount > 0) return 1; //not tested with multiple evaluation mode, hence "return"
+  if (ExpProperties.evalcount > 0) return; //not tested with multiple evaluation mode, hence "return"
 	if (ExpProperties.structured_output == 1)  
 	{
 		var dict = {"ID": "n" + g.num, "Time": Simulator.stepNumber, "Fitness": g.fit2};
@@ -284,10 +336,11 @@ function multievalInitialize(g)
 	g.data->multieval->creatures = 0;
 }
 
-//global g_eval_again; //just to detect if some genotype is evaluated once again (and how much its average fitness varies from evaluation to evaluation even when they are repeated). Maybe this could be implemented better now that we have "data" dictionaries in Genotypes.
+
+
 
 // handles multiple evaluation and returns 1 if it is finished and 0 if still evaluating
-function multievalProcedure(g, cr)
+function multievalMain(g, cr)
 {
 	if (ExpProperties.evalcount <= 0) return 1;
   
@@ -302,7 +355,16 @@ function multievalProcedure(g, cr)
 		initializeMultieval(g);
 	}
 	
-		//g_eval_again = g.fit2; //was already evaluated! let's see how much its average fitness varies  // std_calculation
+	if (g.data->multieval->creatures >= ExpProperties.evalcount)
+		{
+			//here we detect the case where extra creature(s) die
+			//AFTER the required number of instance measurements
+			//have been accumulated, which can happen with MaxCreated>1
+			//when more than one creature die during the same step.
+			//such creatures must be ignored, so we don't proceed
+			return 0; // we return 0 so performance of genotype is not updated many times
+		}
+	
   
 	multievalStoreCreaturePerformanceInGenotype(g,cr);
 	
@@ -311,17 +373,7 @@ function multievalProcedure(g, cr)
 	
   	if (g.data->multieval->creatures >= ExpProperties.evalcount)
 		{
-      
-			g_evaluated_genotype = null; //no more evaluations needed for this one
-			
-			/* // std_calculation
-			//g.data->multieval_std = g.data->multieval.stdev; //compute std.dev. for a vector of fitness values 
-			if (g_eval_again != null)
-			{
-				//Simulator.print("Another multiple evaluation of '" + g.name + "': previous average fitness was " + g_eval_again + ", now changed by " + (g.fit2 - g_eval_again));
-				g_eval_again = null;
-			}
-			*/
+			g_evaluated_genotype = null; //no more evaluations needed for this one	
 			return 1;
 		}
 	return 0;
@@ -408,6 +460,8 @@ function updatePerformanceWithInstances(g, cr)
 		}
 		Simulator.print(mesg);
 	}
+	
+	return g; // just to stay compatible outside (if something uses "g" from this function), even thought it is not supposed to return it now, but rather take "g" as an argument
 }
 
 @include "standard_select.inc" //includes also "standard_nsga_ii.inc"
@@ -417,19 +471,21 @@ function onDied(cr)
 {
 	//Simulator.print("on died cr="+cr+" group="+cr.population.name+" (#"+cr.population.index+")");
 	var g = null;
-    var during_multiple_eval = 0;
+    var multieval_finished = 0; // tells whether multieval has finished to move on to the next genotype and fitness assesment; 
 	if (cr.population.index != 0)
 		return null; // ignore food
 	if (cr.perf_measuring != 2)
 	{
 		var g = getCreatureGenotype(cr);
-		structuredOutput(g, cr);
-		during_multiple_eval = multievalProcedure(g, cr); // checks if there is multieval, runs its procedure if so, returns if multi eval finished
+		structuredOutput(g, cr); // printing some info about creature when structured_output is on
+		multieval_finished = multievalMain(g, cr); // checks if there is multieval, runs its procedure if so (along with custom actions during multieval), 
+												  //returns if multi eval finished
+												  // updates multieval_finished to 1 if no multieval running
     
-		if(during_multiple_eval)
+		if(multieval_finished) // when during multieval dont do those things (we still testing a genotype so no update)
 		{
 			ExpState.totaltestedcr++; //don't count individual evaluations, increment only after ExpProperties.evalcount evaluations
-			updatePerformanceWithInstances(g, cr);
+			updatePerformanceWithInstances(g, cr); 
 			ExpState.update_nsga_ranks_needed = 1;
 		}
     ExpState.totaltests++;
@@ -439,10 +495,10 @@ function onDied(cr)
 		if (ExpProperties.evalcount > 0) g_evaluated_genotype = null; //so don't try to evaluate it anymore. TODO seems that multiple evaluation mode does not handle this properly (this situation increases genotype count in group)
 	}
   
-  if(!during_multiple_eval)
+  if(multieval_finished) //limit gene pool and do checkpoint after whole multieval
   {
     LimitGenePool();
-		Simulator.checkpointData(ExpState.totaltestedcr);
+	Simulator.checkpointData(ExpState.totaltestedcr);
   }
 	return g;
 }
